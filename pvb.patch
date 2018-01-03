@@ -1,0 +1,271 @@
+diff --git a/pvbrowser/MyTextBrowser_v5.cpp b/pvbrowser/MyTextBrowser_v5.cpp
+index 2a940da..c723583 100644
+--- a/pvbrowser/MyTextBrowser_v5.cpp
++++ b/pvbrowser/MyTextBrowser_v5.cpp
+@@ -117,9 +117,14 @@ MyTextBrowser::MyTextBrowser(int *sock, int ident, QWidget *parent, const char *
+   id = ident;
+   
+   if(opt.arg_debug) printf("MyTextBrowser()\n");
++
++  //xin: hacked for build
++  //assert(0);
++  /*
+   MyWebEnginePage *p;
+   p = new MyWebEnginePage(s, id, this);
+   setPage(p);
++  */
+   
+   homeIsSet = 0;
+   factor = 1.0f;
+diff --git a/pvbrowser/MyWidgets.h b/pvbrowser/MyWidgets.h
+index 3b3f33c..8242758 100644
+--- a/pvbrowser/MyWidgets.h
++++ b/pvbrowser/MyWidgets.h
+@@ -579,7 +579,7 @@ private:
+     int *s,id,dock_id;
+ };
+ 
+-#ifdef USE_GOOGLE_WEBKIT_FORK
++#if  1 //def 1 //USE_GOOGLE_WEBKIT_FORK
+ #include "MyTextBrowser_v5.h"
+ #else
+ #include "MyTextBrowser_v4.h"
+diff --git a/pvbrowser/dlgmybrowser.cpp b/pvbrowser/dlgmybrowser.cpp
+index beb136a..b2e9531 100644
+--- a/pvbrowser/dlgmybrowser.cpp
++++ b/pvbrowser/dlgmybrowser.cpp
+@@ -16,10 +16,12 @@
+ #include <stdio.h>
+ #include <qglobal.h>
+ 
++#ifndef MY_NO_WEBKIT
+ #if QT_VERSION >= 0x040400
+ #define USE_WEBKIT
+ #include <QNetworkReply>
+ #endif
++#endif
+ 
+ #include "pvdefine.h"
+ #include "dlgmybrowser.h"
+diff --git a/pvbrowser/main.cpp b/pvbrowser/main.cpp
+index 100f697..c4c01fe 100644
+--- a/pvbrowser/main.cpp
++++ b/pvbrowser/main.cpp
+@@ -20,6 +20,7 @@
+ #include <QIcon>
+ #include <QSplashScreen>
+ #include <QMessageBox>
++#include <QFontDatabase>
+ #include "images/splash.xpm"
+ #include "mainwindow.h"
+ #include "opt.h"
+@@ -166,6 +167,34 @@ void perhapsSetFont(QApplication &app)
+   app.setFont(QFont(font, fsize));
+ }
+ 
++//Add Chinese support
++void perhapsSetFont_CN(QApplication &app)
++{
++  int  fsize = 160;
++  char *cptr, font_name[MAXOPT], font_path[MAXOPT];
++
++  if(opt.arg_font[0] == '\0')
++    sprintf(font_path,"%s","/lib/qt5/fonts/light.ttf");
++  else
++  {
++    strcpy(font_name,opt.arg_font);
++    fsize = 160;
++    cptr = strchr(font_name,':');
++    if(cptr != NULL)
++    {
++      *cptr = '\0';
++      cptr++;
++      sscanf(cptr,"%d",&fsize);
++    }
++    sprintf(font_path,"/lib/qt5/fonts/%s.ttf",font_name);
++  }
++  int id = QFontDatabase::addApplicationFont(font_path);
++  QString msyh = QFontDatabase::applicationFontFamilies (id).at(0);
++  QFont font(msyh,10);
++  font.setPointSize(fsize);
++  app.setFont(font);
++}
++
+ #ifdef BROWSERPLUGIN
+ int pvbinit()
+ {
+@@ -190,11 +219,13 @@ int main(int argc, char *argv[])
+ #endif
+   wsa(); // init windows sockets
+   QApplication app(argc, argv);
++
+   QPixmap pm(splash);
+   QSplashScreen *splash = new QSplashScreen(pm);
+   splash->show();
+   init1(argc,argv);
+-  perhapsSetFont(app);
++  perhapsSetFont_CN(app);
++//  perhapsSetFont(app);
+   QIcon appIcon(":/images/app.png");
+   app.setWindowIcon(appIcon);
+   MainWindow mainWin;
+diff --git a/pvbrowser/pvbrowser.pro b/pvbrowser/pvbrowser.pro
+index 6f6eb7e..4b38687 100644
+--- a/pvbrowser/pvbrowser.pro
++++ b/pvbrowser/pvbrowser.pro
+@@ -4,12 +4,12 @@
+ #######################################
+ CONFIG       += warn_on release
+ #CONFIG      += USE_VTK
+-#DEFINES     += NO_QWT
+-DEFINES      += USE_GOOGLE_WEBKIT_FORK
++DEFINES     +=  NO_WEBKIT MY_NO_WEBKIT
++#DEFINES      += USE_GOOGLE_WEBKIT_FORK NO_QWT
+ #mobile devices without opengl
+ #QT           += opengl
+-QT           += printsupport multimedia uitools webenginewidgets widgets xml svg network printsupport
+-
++QT           += printsupport  svg  widgets xml  network printsupport uitools multimedia
++#webenginewidgets   webkit webkitwidgets
+ linux-g++-gles2 {
+   DEFINES    += USE_MAEMO
+   QT         -= opengl
+@@ -73,8 +73,8 @@ SOURCES       = main.cpp \
+                 pvglwidget.cpp \
+                 gldecode.cpp \
+                 qwtplotwidget.cpp \
+-                dlgtextbrowser.cpp \
+-                dlgmybrowser.cpp
++                dlgtextbrowser.cpp
++            #    dlgmybrowser.cpp
+ 
+ # FORMS        += dlgtextbrowser.ui
+ #               dlgmybrowser.ui
+diff --git a/pvbrowser/pvbrowser.v4.pro b/pvbrowser/pvbrowser.v4.pro
+index 4d4a97d..2974216 100644
+--- a/pvbrowser/pvbrowser.v4.pro
++++ b/pvbrowser/pvbrowser.v4.pro
+@@ -7,6 +7,7 @@ CONFIG       += warn_on release
+ #DEFINES     += NO_QWT
+ #mobile devices without opengl
+ QT           += opengl
++QT           += webenginewidgets
+ lessThan(QT_MAJOR_VERSION, 5) {
+   QT         += xml svg webkit network
+ }else{
+diff --git a/pvbrowser/pvglwidget.h b/pvbrowser/pvglwidget.h
+index 7b85404..d444de6 100644
+--- a/pvbrowser/pvglwidget.h
++++ b/pvbrowser/pvglwidget.h
+@@ -19,6 +19,9 @@
+ #define PVGLWIDGET_H
+ #define PVGLWIDGET_H_V5
+ 
++#define NO_OPEN_GL
++
++#ifndef NO_OPEN_GL
+ #ifndef USE_MAEMO
+ #ifndef USE_ANDROID
+ #ifndef USE_SYMBIAN
+@@ -28,6 +31,7 @@
+ #endif
+ #endif
+ #endif
++#endif
+ 
+ #ifdef USE_OPEN_GL
+ #include <QOpenGLWidget>
+diff --git a/pvdevelop/pvdevelop.pro b/pvdevelop/pvdevelop.pro
+index 2bcaeac..6c0e5ed 100644
+--- a/pvdevelop/pvdevelop.pro
++++ b/pvdevelop/pvdevelop.pro
+@@ -4,16 +4,20 @@ lessThan(QT_MAJOR_VERSION, 5) {
+   QT         += opengl svg webkit
+   CONFIG     += uitools warn_on release
+ }else{
+-  QT         += printsupport uitools webenginewidgets widgets opengl svg webengine
++  QT         += printsupport   widgets opengl svg  uitools
++
++# webenginewidgets webengine
+   CONFIG     += warn_on release
+ }    
++
++
+ QMAKE_LFLAGS += -static-libgcc
+ INCLUDEPATH  += ../pvbrowser
+ #INCLUDEPATH  += ../qwt/include
+ INCLUDEPATH  += ../qwt/src
+ LIBS         += ../qwt/lib/libqwt.a
+ DEFINES      += PVDEVELOP
+-DEFINES      += NO_WEBKIT
++DEFINES      += NO_WEBKIT MY_NO_WEBKIT
+ #DEFINES     += NO_QWT
+ macx:DEFINES += PVMAC
+ macx:DEFINES += unix
+@@ -83,7 +87,7 @@ SOURCES       = main.cpp \
+                 gsiemens.cpp \
+                 widgetgenerator.cpp \
+                 ../pvbrowser/MyWidgets.cpp \
+-                ../pvbrowser/MyTextBrowser_v4.cpp \
++                ../pvbrowser/MyTextBrowser_v5.cpp \
+                 ../pvbrowser/qwtplotwidget.cpp \
+                 ../pvbrowser/QImageWidget.cpp \
+                 ../pvbrowser/QDrawWidget.cpp \
+diff --git a/qmake.sh b/qmake.sh
+index 30f91cc..b44d378 100755
+--- a/qmake.sh
++++ b/qmake.sh
+@@ -5,6 +5,28 @@
+ ##########################################################
+ # use qt5 if available                                   #
+ ##########################################################
++echo
++echo "enter qmake.sh.."
++pwd
++
++
++
++/usr/local/qt5.5.0-arm/bin/qmake -v
++echo "/usr/local/qt5.5.0-arm/bin/qmake $1 $2 $3 $4 $5 $6 $7 $8"
++
++/usr/local/qt5.5.0-arm/bin/qmake $1 $2 $3 $4 $5 $6 $7 $8 -r -spec /usr/local/qt5.5.0-arm/mkspecs/linux-arm-gnueabi-g++
++exit
++
++
++qmake -v
++echo "qmake $1 $2 $3 $4 $5 $6 $7 $8"
++qmake $1 $2 $3 $4 $5 $6 $7 $8
++exit
++
++
++
++
++
+ if [ -x /usr/bin/qmake-qt5 ]; then  
+   echo "run /usr/bin/qmake-qt5"
+   /usr/bin/qmake-qt5 "QMAKE_CXXFLAGS=$RPM_OPT_FLAGS" "QMAKE_CFLAGS=$RPM_OPT_FLAGS" $1 $2 $3 $4 $5 $6 $7 $8
+@@ -15,6 +37,9 @@ if [ -x /usr/bin/qmake ]; then
+   /usr/bin/qmake "QMAKE_CXXFLAGS=$RPM_OPT_FLAGS" "QMAKE_CFLAGS=$RPM_OPT_FLAGS" $1 $2 $3 $4 $5 $6 $7 $8
+   exit
+ fi
++
++
++
+ ##########################################################
+ # fucking stuff to call qmake on different distributions #
+ ##########################################################
+diff --git a/qwt/src/src.pro b/qwt/src/src.pro
+index 2085ed9..11ed0a8 100644
+--- a/qwt/src/src.pro
++++ b/qwt/src/src.pro
+@@ -13,8 +13,8 @@ lessThan(QT_MAJOR_VERSION, 5) {
+ #  QT += webenginewidgets widgets
+ #}    
+ }else{
+-  QT += webenginewidgets widgets
+-}    
++  QT += widgets
++}
+ 
+ 
+ QWT_ROOT = ..
