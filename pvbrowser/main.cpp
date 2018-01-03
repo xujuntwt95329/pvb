@@ -186,7 +186,7 @@ void perhapsSetFont_CN(QApplication &app)
       cptr++;
       sscanf(cptr,"%d",&fsize);
     }
-    sprintf(font_path,"/lib/qt5/fonts/%s.ttf",font_name);
+    sprintf(font_path,"%s",font_name);
   }
   int id = QFontDatabase::addApplicationFont(font_path);
   QString msyh = QFontDatabase::applicationFontFamilies (id).at(0);
