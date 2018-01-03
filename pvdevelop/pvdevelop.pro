@@ -4,16 +4,20 @@ lessThan(QT_MAJOR_VERSION, 5) {
   QT         += opengl svg webkit
   CONFIG     += uitools warn_on release
 }else{
-  QT         += printsupport uitools webenginewidgets widgets opengl svg webengine
+  QT         += printsupport   widgets opengl svg  uitools
+
+# webenginewidgets webengine
   CONFIG     += warn_on release
 }    
+
+
 QMAKE_LFLAGS += -static-libgcc
 INCLUDEPATH  += ../pvbrowser
 #INCLUDEPATH  += ../qwt/include
 INCLUDEPATH  += ../qwt/src
 LIBS         += ../qwt/lib/libqwt.a
 DEFINES      += PVDEVELOP
-DEFINES      += NO_WEBKIT
+DEFINES      += NO_WEBKIT MY_NO_WEBKIT
 #DEFINES     += NO_QWT
 macx:DEFINES += PVMAC
 macx:DEFINES += unix
@@ -83,7 +87,7 @@ SOURCES       = main.cpp \
                 gsiemens.cpp \
                 widgetgenerator.cpp \
                 ../pvbrowser/MyWidgets.cpp \
-                ../pvbrowser/MyTextBrowser_v4.cpp \
+                ../pvbrowser/MyTextBrowser_v5.cpp \
                 ../pvbrowser/qwtplotwidget.cpp \
                 ../pvbrowser/QImageWidget.cpp \
                 ../pvbrowser/QDrawWidget.cpp \

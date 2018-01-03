@@ -117,9 +117,14 @@ MyTextBrowser::MyTextBrowser(int *sock, int ident, QWidget *parent, const char *
   id = ident;
   
   if(opt.arg_debug) printf("MyTextBrowser()\n");
+
+  //xin: hacked for build
+  //assert(0);
+  /*
   MyWebEnginePage *p;
   p = new MyWebEnginePage(s, id, this);
   setPage(p);
+  */
   
   homeIsSet = 0;
   factor = 1.0f;

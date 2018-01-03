@@ -13,8 +13,8 @@ lessThan(QT_MAJOR_VERSION, 5) {
 #  QT += webenginewidgets widgets
 #}    
 }else{
-  QT += webenginewidgets widgets
-}    
+  QT += widgets
+}
 
 
 QWT_ROOT = ..

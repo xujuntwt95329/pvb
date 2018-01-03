@@ -7,6 +7,7 @@ CONFIG       += warn_on release
 #DEFINES     += NO_QWT
 #mobile devices without opengl
 QT           += opengl
+QT           += webenginewidgets
 lessThan(QT_MAJOR_VERSION, 5) {
   QT         += xml svg webkit network
 }else{

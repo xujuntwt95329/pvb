@@ -19,11 +19,15 @@
 #define PVGLWIDGET_H
 #define PVGLWIDGET_H_V5
 
+#define NO_OPEN_GL
+
+#ifndef NO_OPEN_GL
 #ifndef USE_MAEMO
 #ifndef USE_ANDROID
 #ifndef USE_SYMBIAN
 #ifndef __VMS
 #define USE_OPEN_GL
+#endif
 #endif
 #endif
 #endif

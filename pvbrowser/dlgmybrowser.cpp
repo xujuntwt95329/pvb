@@ -16,9 +16,11 @@
 #include <stdio.h>
 #include <qglobal.h>
 
+#ifndef MY_NO_WEBKIT
 #if QT_VERSION >= 0x040400
 #define USE_WEBKIT
 #include <QNetworkReply>
+#endif
 #endif
 
 #include "pvdefine.h"

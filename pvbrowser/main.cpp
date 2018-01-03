@@ -20,6 +20,7 @@
 #include <QIcon>
 #include <QSplashScreen>
 #include <QMessageBox>
+#include <QFontDatabase>
 #include "images/splash.xpm"
 #include "mainwindow.h"
 #include "opt.h"
@@ -166,6 +167,34 @@ void perhapsSetFont(QApplication &app)
   app.setFont(QFont(font, fsize));
 }
 
+//Add Chinese support
+void perhapsSetFont_CN(QApplication &app)
+{
+  int  fsize = 160;
+  char *cptr, font_name[MAXOPT], font_path[MAXOPT];
+
+  if(opt.arg_font[0] == '\0')
+    sprintf(font_path,"%s","/lib/qt5/fonts/light.ttf");
+  else
+  {
+    strcpy(font_name,opt.arg_font);
+    fsize = 160;
+    cptr = strchr(font_name,':');
+    if(cptr != NULL)
+    {
+      *cptr = '\0';
+      cptr++;
+      sscanf(cptr,"%d",&fsize);
+    }
+    sprintf(font_path,"/lib/qt5/fonts/%s.ttf",font_name);
+  }
+  int id = QFontDatabase::addApplicationFont(font_path);
+  QString msyh = QFontDatabase::applicationFontFamilies (id).at(0);
+  QFont font(msyh,10);
+  font.setPointSize(fsize);
+  app.setFont(font);
+}
+
 #ifdef BROWSERPLUGIN
 int pvbinit()
 {
@@ -190,11 +219,13 @@ int main(int argc, char *argv[])
 #endif
   wsa(); // init windows sockets
   QApplication app(argc, argv);
+
   QPixmap pm(splash);
   QSplashScreen *splash = new QSplashScreen(pm);
   splash->show();
   init1(argc,argv);
-  perhapsSetFont(app);
+  perhapsSetFont_CN(app);
+//  perhapsSetFont(app);
   QIcon appIcon(":/images/app.png");
   app.setWindowIcon(appIcon);
   MainWindow mainWin;

@@ -579,7 +579,7 @@ private:
     int *s,id,dock_id;
 };
 
-#ifdef USE_GOOGLE_WEBKIT_FORK
+#if  1 //def 1 //USE_GOOGLE_WEBKIT_FORK
 #include "MyTextBrowser_v5.h"
 #else
 #include "MyTextBrowser_v4.h"

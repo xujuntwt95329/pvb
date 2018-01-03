@@ -4,12 +4,12 @@
 #######################################
 CONFIG       += warn_on release
 #CONFIG      += USE_VTK
-#DEFINES     += NO_QWT
-DEFINES      += USE_GOOGLE_WEBKIT_FORK
+DEFINES     +=  NO_WEBKIT MY_NO_WEBKIT
+#DEFINES      += USE_GOOGLE_WEBKIT_FORK NO_QWT
 #mobile devices without opengl
 #QT           += opengl
-QT           += printsupport multimedia uitools webenginewidgets widgets xml svg network printsupport
-
+QT           += printsupport  svg  widgets xml  network printsupport uitools multimedia
+#webenginewidgets   webkit webkitwidgets
 linux-g++-gles2 {
   DEFINES    += USE_MAEMO
   QT         -= opengl
@@ -73,8 +73,8 @@ SOURCES       = main.cpp \
                 pvglwidget.cpp \
                 gldecode.cpp \
                 qwtplotwidget.cpp \
-                dlgtextbrowser.cpp \
-                dlgmybrowser.cpp
+                dlgtextbrowser.cpp
+            #    dlgmybrowser.cpp
 
 # FORMS        += dlgtextbrowser.ui
 #               dlgmybrowser.ui
