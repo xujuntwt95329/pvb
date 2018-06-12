@@ -25,6 +25,7 @@
 #include "mainwindow.h"
 #include "opt.h"
 #include "tcputil.h"
+#include <unistd.h>
 
 extern OPT opt;
 
@@ -174,7 +175,23 @@ void perhapsSetFont_CN(QApplication &app)
   char *cptr, font_name[MAXOPT], font_path[MAXOPT];
 
   if(opt.arg_font[0] == '\0')
-    sprintf(font_path,"%s","/lib/qt5/fonts/light.ttf");
+  {
+	  sprintf(font_path,"%s","/lib/qt5/fonts/light.ttf");
+	  if( access(font_path, 0) != 0)
+	  {
+		  strcpy(font_path, opt.arg_av0);
+		  char * p = strrchr(font_path, '/');
+		  if(p)
+		  {
+			  strcpy(p+1, "light.ttf");
+			  if( access(font_path, 0) != 0)
+			  {
+				  printf("can't locate the font file!!!\n");
+				  return;
+			  }
+		  }
+	  }
+  }
   else
   {
     strcpy(font_name,opt.arg_font);
